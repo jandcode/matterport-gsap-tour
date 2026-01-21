@@ -159,6 +159,7 @@ export default function MatterportViewer({
 
     return (
         <div className="w-full h-full">
+            {/* @ts-ignore */}
             <matterport-viewer
                 ref={viewerRef}
                 asset-base={assetBase}
