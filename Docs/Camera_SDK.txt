@@ -1,0 +1,292 @@
+Namespace: Camera
+@mpSdk Camera
+Usage of the SDK constitutes your agreement with the Matterport SDK Agreement. Email developers@matterport.com with any questions.
+Index
+Enumerations
+Direction
+Event
+TransitionType
+Types
+Pose
+RotateOptions
+ZoomData
+Properties
+pose
+zoom
+Methods
+getPose
+lookAtScreenCoords
+moveInDirection
+pan
+rotate
+setRotation
+zoomBy
+zoomReset
+zoomTo
+Types
+Pose
+Pose: object
+Type declaration
+mode: Mode
+position: Vector3
+projection: Float32Array
+rotation: Vector2
+sweep: string
+RotateOptions
+RotateOptions: object
+Type declaration
+Optional speed?: undefined | number
+Rotation speed in degrees per second.
+
+ZoomData
+ZoomData: object
+Type declaration
+level: number
+The current zoom level
+
+Properties
+pose
+pose: IObservable<Camera.Pose>
+An observable pose data object that can be subscribed to.
+
+mpSdk.Camera.pose.subscribe(function (pose) {
+  // Changes to the Camera pose have occurred.
+  console.log('Current position is ', pose.position);
+  console.log('Rotation angle is ', pose.rotation);
+  console.log('Sweep UUID is ', pose.sweep);
+  console.log('View mode is ', pose.mode);
+});
+zoom
+zoom: IObservable<Camera.ZoomData>
+An observable zoom level of the camera in Panorama mode. The zoom level will be 1.0 for all other viewmodes.
+
+mpSdk.Camera.zoom.subscribe(function (zoom) {
+  // the zoom level has changed
+  console.log('Current zoom is ', zoom.level);
+});
+Methods
+getPose
+getPose(): Promise<Camera.Pose>
+deprecated
+You can use the pose observable property instead.
+
+Returns the current state of camera.
+
+mpSdk.Camera.getPose()
+  .then(function(pose){
+    console.log('Current position is ', pose.position);
+    console.log('Rotation angle is ', pose.rotation);
+    console.log('Sweep UUID is ', pose.sweep);
+    console.log('View mode is ', pose.mode);
+  });
+Returns Promise<Camera.Pose>
+A promise that resolves with the current state of the camera.
+
+lookAtScreenCoords
+lookAtScreenCoords(x: number, y: number): Promise<void>
+Rotates the camera to a specific screen coordinate. Coordinates are measure in pixels, relative to the WebGL Canvas' top left corner. See https://www.w3schools.com/graphics/canvas_coordinates.asp for more information on coordinates.
+
+mpSdk.Camera.lookAtScreenCoords(500, 320)
+  .then(function() {
+    // Camera rotation complete.
+  })
+  .catch(function(error) {
+    // Camera rotation error.
+  });
+Parameters
+x: number
+Horizontal position, in pixels. Starting from the canvas' top left corner.
+
+y: number
+Vertical position, in pixels. Starting from the canvas' top left corner.
+
+Returns Promise<void>
+A Promise that resolves when the rotation is complete.
+
+Errors
+
+Fails if used outside of Inside mode.
+Warns to console if you rotated, but then you hit the vertical limit.
+Fails if no movement because you are already at a rotation limit.
+moveInDirection
+moveInDirection(direction: Camera.Direction): Promise<void>
+Moves user to a different sweep relative to their current location
+
+const nextDirection = mpSdk.Camera.Direction.FORWARD;
+
+mpSdk.Camera.moveInDirection(nextDirection)
+  .then(function(){
+    console.log('The camera has moved forward.');
+  })
+  .catch(function(){
+    console.warning('An error occured while moving in that direction.');
+  });
+Parameters
+direction: Camera.Direction
+The direction.
+
+Returns Promise<void>
+A promise that resolves when a sweep has been reached.
+
+Errors
+
+Fails if direction is not one of the above options.
+Warns if you can’t move in that direction (hit a wall).
+Notes
+
+This is the same behavior as if the user presses the arrow keys while in 3D Showcase.
+
+Camera.Direction.UP is like moving forwards
+Camera.Direction.DOWN is like moving backwards
+This action is for moving between sweeps while in Inside View.
+
+pan
+pan(params: object): Promise<void>
+Pans the camera.
+
+mpSdk.Camera.pan({ x: 1, z: 1 })
+  .then(function() {
+    // Pan complete.
+  })
+  .catch(function(error) {
+    // Pan error.
+  });
+Parameters
+params: object
+x: number
+Absolute position of the sweep on the x axis.
+
+z: number
+Absolute position of the sweep on the z axis.
+
+Returns Promise<void>
+A promise that resolves when the pan is complete.
+
+Errors
+
+Warns if pan was successful but you hit the model bounds.
+Fails if you are already at the model bounds and you cannot move any further.
+Notes
+
+The orientation of the axes depends on the sweep you were in before entering Floorplan and the aspect ratio of window.
+
+Only available in Dollhouse or Floorplan View. This is the same behavior as if the user uses the keyboard shortcuts W, A, S, and D or the arrow keys.
+
+Use mpSdk.Camera.pan({ x: 0, z: 0 }); to return to directly above the very first sweep scanned.
+
+rotate
+rotate(horizontal: number, vertical: number, options?: Camera.RotateOptions): Promise<void>
+Rotates the camera (user’s viewpoint).
+
+mpSdk.Camera.rotate(10, -20, { speed: 2 })
+  .then(function() {
+    // Camera rotation complete.
+  })
+  .catch(function(error) {
+    // Camera rotation error.
+  });
+Parameters
+horizontal: number
+How many degrees to rotate left or right.
+
+vertical: number
+How many degrees to rotate up or down.
+
+Optional options: Camera.RotateOptions
+Returns Promise<void>
+A promise that resolves when the rotation is complete.
+
+Errors
+
+Warns to console if you rotated, but then you hit the vertical limit.
+Warns if trying to rotate up or down in Floorplan View.
+Fails if no movement because you are already at a rotation limit.
+Notes
+
+If user is in Dollhouse or Floorplan View, the entire Matterport Space is rotated.
+
+Positive values for horizontal means the Space rotates clockwise.
+Negative values for horizontal counterclockwise rotations.
+In Dollhouse view, vertical ranges from 0° (horizontal) to 80° above the Space.
+In Floorplan view, the vertical value is ignored.
+If the user is in Inside View or 360º View, their viewpoint is rotated.
+
+Positive values for horizontal means the user rotates clockwise.
+Negative values for horizontal are counterclockwise rotations.
+Vertical ranges from -70° (down) to 70° (up).
+Tilting the view (similar to tilting one’s head) not supported.
+Rotation is relative to the user’s current viewpoint. This is the same behavior as if the user uses the keyboard shortcuts I, J, K, and L. Speeds less than or equal to zero are not allowed.
+
+setRotation
+setRotation(rotation: Rotation, options?: Camera.RotateOptions): Promise<void>
+Sets the orientation of the camera (user’s viewpoint) while in Panorama View.
+
+mpSdk.Camera.setRotation({ x: 10, y: -20 }, { speed: 2 })
+  .then(function() {
+    // Camera rotation complete.
+  })
+  .catch(function(error) {
+    // Camera rotation error.
+  });
+Parameters
+rotation: Rotation
+The target rotation
+
+Optional options: Camera.RotateOptions
+Returns Promise<void>
+A promise that resolves when the rotation is complete.
+
+Errors
+
+Fails if the current view mode is not Panorama View.
+Notes
+
+A target rotation can be retrieved from Camera.pose
+Rotation is absolute so multiple calls will not further change orientation (floating point error notwithstanding).
+Speeds less than or equal to zero are not allowed.
+zoomBy
+zoomBy(zoomDelta: number): Promise<number>
+Zooms the camera by a percentage. The zoom delta is defined relative to the base field of view, not the current zoom. This means that the delta is strictly added, and not multiplied by the current zoom first.
+
+Ex: If at zoom 2.0, zooming by another 0.1x will bring the camera to 2.1x (2.0 + 0.1) not 2.2x (2.0 + 2.0 * 0.1)
+
+mpSdk.Camera.zoomBy(0.1)
+  .then(function (newZoom) {
+    console.log('Camera zoomed to', newZoom);
+  });
+Parameters
+zoomDelta: number
+Errors
+
+Fails if the current mode is not Inside mode.
+Warns to console if the zoom level would be outside of the zoom range supported.
+Returns Promise<number>
+zoomReset
+zoomReset(): Promise<void>
+Reset the zoom of the camera back to 1.0x.
+
+mpSdk.Camera.zoomReset()
+  .then(function () {
+    console.log('Camera zoom has been reset');
+  })
+Errors
+
+Fails if the current mode is not Inside mode.
+Returns Promise<void>
+zoomTo
+zoomTo(zoomLevel: number): Promise<number>
+Zooms the camera to a percentage of the base field of view.
+
+Ex: Doubling the zoom, halves the field of view.
+
+mpSdk.Camera.zoomTo(2.0)
+ .then(function (newZoom) {
+   console.log('Camera zoomed to', newZoom);
+ });
+Parameters
+zoomLevel: number
+Errors
+
+Fails if the current mode is not Inside mode.
+Warns to console if the zoom level is outside of the zoom range supported.
+Returns Promise<number>
