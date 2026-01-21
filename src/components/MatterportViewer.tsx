@@ -23,6 +23,7 @@ export default function MatterportViewer({
 
     useEffect(() => {
         // Import the web component on the client side
+        // @ts-ignore
         import('@matterport/webcomponent');
 
         const viewer = viewerRef.current;
